@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { MapPin, Phone, Search } from "lucide-react";
 import { ACCOUNTS, KINDS, NAMED, REGIONS, STATUSES, type Account, type BidStatus, type Kind, type Region } from "@/data/accounts";
+import { COUNTIES, MAP_H, MAP_W } from "@/data/counties";
 import { STAGES, noteOf, stageOf, usePipeline } from "@/lib/pipeline";
 
 type View = "week" | "map" | "book";
@@ -31,14 +32,14 @@ function statusClass(status: BidStatus) {
   return "text-muted";
 }
 
-function project(account: Account) {
-  const minLng = -91.7;
-  const maxLng = -88.05;
-  const minLat = 30.15;
-  const maxLat = 35.05;
-  const x = ((account.lng - minLng) / (maxLng - minLng)) * 100;
-  const y = ((maxLat - account.lat) / (maxLat - minLat)) * 100;
-  return { x, y };
+function countyClass(account: Account | undefined, on: boolean) {
+  const fill =
+    account?.bidStatus === "Skip" || account?.bidStatus === "Locked"
+      ? "fill-stop"
+      : account?.record
+        ? "fill-accent"
+        : "fill-raised";
+  return `${fill} ${on ? "stroke-fg" : "stroke-line"}`;
 }
 
 export function Desk() {
@@ -170,31 +171,34 @@ export function Desk() {
 
           {view === "map" && (
             <div className="rounded-lg border border-line bg-surface p-3">
-              <p className="mb-3 text-sm text-muted">Amber means a public record names the supplier. Muted means no supplier was published. Rust means skip it or it is locked.</p>
-              <div className="relative h-[28rem] overflow-hidden rounded-lg bg-bg md:h-[36rem]">
-                {filtered.map((account) => {
-                  const point = project(account);
-                  const on = selected?.id === account.id;
+              <p className="mb-3 text-sm text-muted">
+                Tap a county. Amber means a public record names the supplier. Rust means skip it or it is locked.
+              </p>
+              <svg
+                viewBox={`0 0 ${MAP_W} ${MAP_H}`}
+                className="mx-auto h-auto w-full max-w-xl"
+                role="img"
+                aria-label="Map of Mississippi counties"
+              >
+                {COUNTIES.map((county) => {
+                  const account = ACCOUNTS.find((item) => item.kind === "County" && item.county === county.name);
+                  const on = selected?.county === county.name;
+                  const hidden =
+                    (region !== "All" || kind !== "All" || status !== "All" || query.trim() !== "") &&
+                    !filtered.some((item) => item.county === county.name);
                   return (
-                    <button
-                      key={account.id}
-                      type="button"
-                      title={account.name}
-                      onClick={() => setSelectedId(account.id)}
-                      className="absolute min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${point.x}%`, top: `${point.y}%` }}
+                    <path
+                      key={county.name}
+                      d={county.d}
+                      strokeWidth={on ? 3 : 1.2}
+                      className={`cursor-pointer ${countyClass(account, on)} ${hidden ? "opacity-25" : ""}`}
+                      onClick={() => account && setSelectedId(account.id)}
                     >
-                      <span
-                        className={`mx-auto block rounded-full ${on ? "h-4 w-4 bg-fg" : account.record ? "h-3 w-3 bg-accent" : account.bidStatus === "Skip" || account.bidStatus === "Locked" ? "h-3 w-3 bg-stop" : "h-3 w-3 bg-muted"}`}
-                      />
-                    </button>
+                      <title>{`${county.name} County`}</title>
+                    </path>
                   );
                 })}
-                <div className="pointer-events-none absolute bottom-3 left-3 font-mono text-xs text-muted">
-                  <p>North</p>
-                  <p className="mt-16">Coast</p>
-                </div>
-              </div>
+              </svg>
             </div>
           )}
 

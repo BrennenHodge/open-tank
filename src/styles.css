@@ -1,0 +1,37 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Barlow", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --color-bg: #141612;
+  --color-surface: #1e211c;
+  --color-raised: #272b25;
+  --color-fg: #efece4;
+  --color-muted: #a39e92;
+  --color-line: #34382f;
+  --color-accent: #e0a22a;
+  --color-ink: #1a1406;
+  --color-stop: #c46b52;
+  --radius: 0.75rem;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html,
+  body,
+  #root {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    min-height: 100%;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+}

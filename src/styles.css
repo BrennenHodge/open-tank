@@ -35,3 +35,47 @@
     line-height: 1.5;
   }
 }
+
+.tank-map {
+  height: 24rem;
+  width: 100%;
+  background: var(--color-bg);
+}
+
+.tank-map.leaflet-container {
+  height: 24rem;
+  width: 100%;
+  background: var(--color-bg);
+  font-family: var(--font-sans);
+}
+
+@media (min-width: 64rem) {
+  .tank-map,
+  .tank-map.leaflet-container {
+    height: 36rem;
+  }
+}
+
+.leaflet-bar {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.leaflet-control-zoom a {
+  width: 2.75rem;
+  height: 2.75rem;
+  line-height: 2.75rem;
+  color: var(--color-fg);
+  background: var(--color-raised);
+  border-bottom-color: var(--color-line);
+}
+
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  color: var(--color-muted);
+}
+
+.leaflet-control-attribution a {
+  color: var(--color-muted);
+}

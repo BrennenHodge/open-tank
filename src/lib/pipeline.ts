@@ -1,55 +1,34 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export const STAGES = ["New", "Called", "Quoted", "Won", "Parked"] as const;
-export type Stage = (typeof STAGES)[number];
+type Row = { note: string; ours: boolean };
 
-type Row = { stage: Stage; note: string; ours: boolean };
-
-type Pipeline = {
+type Book = {
   rows: Record<string, Row>;
-  setStage: (id: string, stage: Stage) => void;
   setNote: (id: string, note: string) => void;
   setOurs: (id: string, ours: boolean) => void;
 };
 
 function rowOf(rows: Record<string, Row>, id: string): Row {
-  return rows[id] ?? { stage: "New", note: "", ours: false };
+  return rows[id] ?? { note: "", ours: false };
 }
 
-export const usePipeline = create<Pipeline>()(
+export const usePipeline = create<Book>()(
   persist(
     (set) => ({
       rows: {},
-      setStage: (id, stage) =>
-        set((state) => ({
-          rows: {
-            ...state.rows,
-            [id]: { ...rowOf(state.rows, id), stage },
-          },
-        })),
       setNote: (id, note) =>
         set((state) => ({
-          rows: {
-            ...state.rows,
-            [id]: { ...rowOf(state.rows, id), note },
-          },
+          rows: { ...state.rows, [id]: { ...rowOf(state.rows, id), note } },
         })),
       setOurs: (id, ours) =>
         set((state) => ({
-          rows: {
-            ...state.rows,
-            [id]: { ...rowOf(state.rows, id), ours },
-          },
+          rows: { ...state.rows, [id]: { ...rowOf(state.rows, id), ours } },
         })),
     }),
     { name: "open-tank-book" },
   ),
 );
-
-export function stageOf(rows: Record<string, Row>, id: string): Stage {
-  return rows[id]?.stage ?? "New";
-}
 
 export function noteOf(rows: Record<string, Row>, id: string): string {
   return rows[id]?.note ?? "";
@@ -57,4 +36,24 @@ export function noteOf(rows: Record<string, Row>, id: string): string {
 
 export function oursOf(rows: Record<string, Row>, id: string): boolean {
   return rows[id]?.ours ?? false;
+}
+
+export function quoteMail(place: { name: string; person?: string; email?: string }): string {
+  const person = place.person?.trim() ?? "";
+  const email = place.email?.trim() ?? "";
+  const to = email.includes("@") ? email : "";
+  const hello = person ? `Hello ${person},` : "Hello,";
+  const subject = `A fuel quote for ${place.name}`;
+  const body = [
+    hello,
+    "",
+    "This is GPM Empire in Purvis. We sell wholesale fuel.",
+    "",
+    `If you would like a quote for fuel at ${place.name}, we can put one together.`,
+    "",
+    "GPM Empire",
+    "Wholesale fuel",
+    "Purvis, Mississippi",
+  ].join("\n");
+  return `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
